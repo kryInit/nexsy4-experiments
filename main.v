@@ -6,7 +6,22 @@
 // 50MHz clock signal of SPI
 
 /******************************************************************************************/
-module m_main(w_clk, st7789_SDA, st7789_SCL, st7789_DC, st7789_RES, led, SW);
+module m_main(
+        w_clk,
+        st7789_SDA,
+        st7789_SCL,
+        st7789_DC,
+        st7789_RES,
+        led,
+        SW,
+        is_pressed_left_btn,
+        is_pressed_right_btn,
+        is_pressed_top_btn,
+        is_pressed_bottom_btn,
+        is_pressed_center_btn,
+        seg_display_state,
+        is_lighted_seg_display
+);
     input  wire w_clk; // main clock signal (100MHz)
     output wire st7789_SCL;
     inout  wire st7789_SDA;
@@ -14,7 +29,25 @@ module m_main(w_clk, st7789_SDA, st7789_SCL, st7789_DC, st7789_RES, led, SW);
     output wire st7789_RES;
     output wire [15:0] led;
     input  wire [15:0]  SW;      // Switch
-  
+    input  wire is_pressed_left_btn;
+    input  wire is_pressed_right_btn;
+    input  wire is_pressed_top_btn;
+    input  wire is_pressed_bottom_btn;
+    input  wire is_pressed_center_btn;
+    output wire [7:0] seg_display_state;
+    output wire [7:0] is_lighted_seg_display;
+
+    assign is_lighted_seg_display = 8'b10101010;
+    assign seg_display_state = 8'b10101010;
+
+    assign led[0] = 1;
+    assign led[1] = 0;
+    assign led[2] = is_pressed_center_btn;
+    assign led[3] = is_pressed_top_btn;
+    assign led[4] = is_pressed_right_btn;
+    assign led[5] = is_pressed_bottom_btn;
+    assign led[6] = is_pressed_left_btn;
+
     wire w_clk_t = w_clk;
     reg [15:0] r_SW=0;
     always @(posedge w_clk_t) r_SW <= SW;
@@ -23,7 +56,7 @@ module m_main(w_clk, st7789_SDA, st7789_SCL, st7789_DC, st7789_RES, led, SW);
     always @(posedge w_clk_t) begin
         r_x <= (r_x==239) ? 0 : r_x + 1;
         r_y <= (r_y==239) ? 0 : (r_x==239) ? r_y + 1 : r_y;
-    end    
+    end
     
     reg [15:0] r_st_wadr  = 0; //{ r_y[7:0], r_sx[7:0]};
     reg        r_st_we    = 0; // cam_we && (r_sx<256) && (r_y<256);  
@@ -31,7 +64,7 @@ module m_main(w_clk, st7789_SDA, st7789_SCL, st7789_DC, st7789_RES, led, SW);
     always @(posedge w_clk_t) r_st_wadr  <= {r_y, r_x};
     always @(posedge w_clk_t) r_st_we    <= 1; 
     always @(posedge w_clk_t) r_st_wdata <= (r_x<30 && r_y<60) ? 16'hffff :
-                                            (r_x<r_y) ? 16'b11111100000 : 16'b11111;  
+                                            (|SW) ? 16'b11111100000 : 16'b11111;
     
     reg [15:0] vmem [0:65535]; // video memory, 256 x 256 (65,536) x 12bit color
     always @(posedge w_clk_t) if(r_st_we) vmem[r_st_wadr] <= r_st_wdata;
