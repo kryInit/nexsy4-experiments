@@ -1,0 +1,16 @@
+[tool.poetry]
+name = "reserch-project"
+version = "0.1.0"
+description = ""
+authors = ["kryInit <kryinit@gmail.com>"]
+readme = "README.md"
+packages = [{include = "reserch_project"}]
+
+[tool.poetry.dependencies]
+python = "^3.9"
+pillow = "^10.0.1"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

@@ -81,7 +81,7 @@ int calc_solution_count(const ProblemSetting& problem_setting) {
         rep(i, switch_count) {
             if (state_id & (1 << i)) {
                 for(const auto& target : switches[i].linked_targets) {
-                    display_state[target.display_idx][target.segment_idx] = true;
+                    display_state[target.display_idx][target.segment_idx] = !display_state[target.display_idx][target.segment_idx];
                 }
             }
         }
@@ -96,6 +96,15 @@ int calc_solution_count(const ProblemSetting& problem_setting) {
             if (!ok) break;
         }
 
+//        if (ok) {
+//            rep(i, switch_count) {
+//                if (state_id & (1 << i)) {
+//                    cout << i << ", ";
+//                }
+//            }
+//            cout << endl;
+//        }
+
         solution_count += ok;
     }
     return solution_count;
@@ -109,28 +118,71 @@ void dump_problem_info(const ProblemSetting& problem_setting) {
 
     cout << "solution counts: " << calc_solution_count(problem_setting) << endl;
 
+    rep(i, display_count) {
+        rep(j, segment_count) {
+            // cout << "display_state[1][0] <= sw_state[2];"
+            cout << "display_state[" << i << "][" << j << "] <= ~(" << (problem_setting.initial_display_state[i][j] ? 1 : 0);
+            rep(k, problem_setting.switches.size()) {
+                const auto& sw = problem_setting.switches[k];
+                rep(l, sw.linked_targets.size()) {
+                    const auto& target = sw.linked_targets[l];
+                    if (target.display_idx == i && target.segment_idx == j) {
+                        cout << " ^ " << "sw_state[" << k << "]";
+                    }
+                }
+            }
+            cout << ");" << endl;
+        }
+    }
 }
 
 int main() {
     ProblemSetting problem0(
         16,
         {
-            Switch({ LinkedTarget(0,1), LinkedTarget(1,6) }),
-            Switch({ LinkedTarget(0,2), LinkedTarget(1,0) }),
-            Switch({ LinkedTarget(0,0), LinkedTarget(1,3) }),
-            Switch({ LinkedTarget(0,5), LinkedTarget(1,1) }),
-            Switch({ LinkedTarget(0,4), LinkedTarget(1,4) }),
-            Switch({ LinkedTarget(0,3) }),
-            Switch({ LinkedTarget(0,6), LinkedTarget(1,1) }),
-            Switch({ LinkedTarget(0,1), LinkedTarget(1,4) }),
-            Switch({ LinkedTarget(0,2), LinkedTarget(1,1) }),
-            Switch({ LinkedTarget(0,4) }),
-            Switch({ LinkedTarget(0,6), LinkedTarget(1,2) }),
-            Switch({ LinkedTarget(0,1), LinkedTarget(1,5) }),
-            Switch({ LinkedTarget(0,2), LinkedTarget(1,4) }),
-            Switch({ LinkedTarget(0,3), LinkedTarget(1,3) }),
-            Switch({ LinkedTarget(0,5) }),
-            Switch({ LinkedTarget(0,1), LinkedTarget(1,0) }),
+            Switch({ {0,0} }),
+            Switch({ {0,1} }),
+            Switch({ {0,2} }),
+            Switch({ {0,3} }),
+            Switch({ {0,4} }),
+            Switch({ {0,5} }),
+            Switch({ {0,6} }),
+            Switch({ {0,0} }),
+            Switch({ {0,1} }),
+            Switch({ {0,2} }),
+            Switch({ {0,3} }),
+            Switch({ {0,4} }),
+            Switch({ {0,5} }),
+            Switch({ {0,6} }),
+            Switch({ {0,0} }),
+            Switch({ {0,1} }),
+        },
+        {
+            array<bool, segment_count>{false, false, false, false, false, false, false},
+            array<bool, segment_count>{true, true, true, true, true, true, true},
+            array<bool, segment_count>{true, true, true, true, true, true, true},
+            array<bool, segment_count>{true, true, true, true, true, true, true},
+        }
+    );
+    ProblemSetting problem1(
+        16,
+        {
+            Switch({ {0,0}, {1,0} }),
+            Switch({ {0,6}, {1,6} }),
+            Switch({ {0,3}, {1,3} }),
+            Switch({ {0,1}, {1,1} }),
+            Switch({ {0,2}, {1,2} }),
+            Switch({ {0,5}, {1,5} }),
+            Switch({ {0,4}, {1,4} }),
+            Switch({ {0,1}, {1,5} }),
+            Switch({ {0,5}, {1,1} }),
+            Switch({ {0,2}, {1,4} }),
+            Switch({ {0,4}, {1,2} }),
+            Switch({ {0,0}, {1,3} }),
+            Switch({ {0,3}, {1,0} }),
+            Switch({ {0,0}, {1,6} }),
+            Switch({ {0,6}, {1,3} }),
+            Switch({ {0,3}, {1,6} }),
         },
         {
             array<bool, segment_count>{false, false, false, false, false, false, false},
@@ -140,7 +192,91 @@ int main() {
         }
     );
 
-    dump_problem_info(problem0);
+    ProblemSetting problem2(
+        16,
+        {
+            Switch({ {0,1}, {0,2}, {0,6}, {1,0}, {1,3} }),
+            Switch({ {0,2}, {1,2} }),
+            Switch({ {1,1}, {1,2}, {1,4}, {1,5}, {1,6}, {2, 0}, {2,6}, {2,3} }),
+            Switch({ {0,1}, {1,4}, {2, 0}, {0,4}, {1,2}, {2, 2} }),
+            Switch({ {0,3}, {2, 1} }),
+            Switch({ {0,4}, {1,2}, {2, 2} }),
+            Switch({ {0,4}, {1,1}, {2, 1}, {0,5}, {1,3}, {2, 1} }),
+            Switch({ {1,5}, {2, 6} }),
+            Switch({ {0,5}, {1,3}, {2, 1} }),
+            Switch({ {0,2}, {1,2}, {2, 4}, {0,1}, {1,5}, {2, 2} }),
+            Switch({ {2, 1} }),
+            Switch({ {0,1}, {1,5}, {1,0}, {2, 0} }),
+            Switch({ {1,0}, {2, 0} }),
+            Switch({ {0,5} }),
+            Switch({ {0,0}, {0,3}, {0,4}, {0,5}, {2,1}, {2,2}, {2,4}, {2,5} }),
+            Switch({ {0,3}, {2, 3} }),
+        },
+        {
+            array<bool, segment_count>{false, false, false, false, false, false, false},
+            array<bool, segment_count>{false, false, false, false, false, false, false},
+            array<bool, segment_count>{false, false, false, false, false, false, false},
+            array<bool, segment_count>{true, true, true, true, true, true, true},
+        }
+    );
+
+    ProblemSetting problem3(
+        16,
+        {
+            Switch({ {0,1}, {0,6}, {1,6}, {2,1}, {2,2}, {3,6} }),
+            Switch({ {0,3}, {0,6}, {1,2}, {2,0}, {2,4}, {3,0} }),
+            Switch({ {0,0}, {1,4}, {2,0}, {2,2}, {3,1} }),
+            Switch({ {0,4}, {1,0}, {1,1}, {2,3}, {3,1}, {3,5} }),
+            Switch({ {0,1}, {0,5}, {1,2}, {1,1}, {1,5}, {2,0}, {3,0}, {3,4} }),
+            Switch({ {1,2}, {0,5}, {1,4}, {2,2}, {2,6}, {3,0}, {3,6} }),
+            Switch({ {0,0}, {0,2}, {0,5}, {1,3}, {2,0}, {3,0}, {3,2}, {3,3} }),
+            Switch({ {0,0}, {0,1}, {0,5}, {1,4}, {2,4}, {3,0} }),
+            Switch({ {0,2}, {0,5}, {1,3}, {1,4}, {1,6}, {2,2}, {3,0}, {3,5} }),
+            Switch({ {0,2}, {0,5}, {1,2}, {1,5}, {2,6}, {3,3} }),
+            Switch({ {1,2}, {0,5}, {1,4}, {2,1}, {2,5}, {3,3}, {3,6} }),
+            Switch({ {0,1}, {0,3}, {0,2}, {1,3}, {2,1}, {3,2} }),
+            Switch({ {0,1}, {0,3}, {0,4}, {1,2}, {2,2}, {3,2}, {3,3}, {3,4} }),
+            Switch({ {0,1}, {1,4}, {2,1}, {2,4}, {3,0} }),
+            Switch({ {0,0}, {0,5}, {1,1}, {1,6}, {2,5}, {3,0} }),
+            Switch({ {0,4}, {1,0}, {1,3}, {2,5}, {3,0}, {3,2} }),
+        },
+        {
+            array<bool, segment_count>{false, false, false, false, false, false, false},
+            array<bool, segment_count>{false, false, false, false, false, false, false},
+            array<bool, segment_count>{false, false, false, false, false, false, false},
+            array<bool, segment_count>{false, false, false, false, false, false, false},
+        }
+    );
+
+
+    ProblemSetting problem4(
+        16,
+        {
+            Switch({ {0,1}, {1,6} }),
+            Switch({ {0,2}, {1,0} }),
+            Switch({ {0,0}, {1,3} }),
+            Switch({ {0,5}, {1,1} }),
+            Switch({ {0,4}, {1,4} }),
+            Switch({ {0,3} }),
+            Switch({ {0,6}, {1,1} }),
+            Switch({ {0,1}, {1,4} }),
+            Switch({ {0,2}, {1,1} }),
+            Switch({ {0,4} }),
+            Switch({ {0,6}, {1,2} }),
+            Switch({ {0,1}, {1,5} }),
+            Switch({ {0,2}, {1,4} }),
+            Switch({ {0,3}, {1,3} }),
+            Switch({ {0,5} }),
+            Switch({ {0,1}, {1,0} }),
+        },
+        {
+            array<bool, segment_count>{false, false, false, false, false, false, false},
+            array<bool, segment_count>{false, false, false, false, false, false, false},
+            array<bool, segment_count>{true, true, true, true, true, true, true},
+            array<bool, segment_count>{true, true, true, true, true, true, true},
+        }
+    );
+    dump_problem_info(problem3);
 
     return 0;
 }
